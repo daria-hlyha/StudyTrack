@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>StudyTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">🎓 StudyTrack</div>
+        <a href="#dashboard" class="active" data-page="dashboard" onclick="navigateTo('dashboard', event)">
+            <span style="flex:1;">📊 Глобальний Дашборд</span>
+        </a>
+        <a href="#deadlines" data-page="deadlines" onclick="navigateTo('deadlines', event)">
+            <span style="flex:1;">⏰ Центр дедлайнів</span>
+        </a>
+        <a href="#kanban" data-page="kanban" onclick="navigateTo('kanban', event)">
+            <span style="flex:1;">📋 Канбан-дошка</span>
+        </a>
+        <a href="#achievements" data-page="achievements" onclick="navigateTo('achievements', event)">
+            <span style="flex:1;">🏆 Досягнення</span>
+        </a>
+
+        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="1">
+            <span class="arrow">▶</span> Предмети (Семестр 1)
+        </div>
+        <div class="semester-group open" id="sem-group-1"></div>
+
+        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="2">
+            <span class="arrow">▶</span> Предмети (Семестр 2)
+        </div>
+        <div class="semester-group open" id="sem-group-2"></div>
+
+        <div style="margin-top: auto; padding-top: 20px;">
+            <button class="btn btn-primary btn-sm" style="width: 100%;" onclick="openAddSubjectModal()">➕ Додати предмет</button>
+        </div>
+    </nav>
+
+    <main>
+
+        <section id="page-dashboard" class="page active">
+            <h1>📊 Глобальний Дашборд</h1>
+            <p class="subtitle">Зведена картина успішності за поточний семестр</p>
+            <div style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <label style="font-weight:600;">Фільтр семестру:</label>
+                <select id="dashboard-semester-filter" onchange="renderDashboard()" style="width:auto; display:inline-block;">
+                    <option value="all">📚 Усі семестри</option>
+                    <option value="1">📘 Семестр 1</option>
+                    <option value="2">📗 Семестр 2</option>
+                </select>
+            </div>
+            <div class="card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h3 style="margin:0;">Загальний прогрес семестру</h3>
+                        <p style="opacity:0.8; margin:4px 0 0;">Оновлено щойно</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 2.5rem; font-weight: 700;" id="global-progress-percent">0%</span>
+                    </div>
+                </div>
+                <div class="progress-bg" style="background: rgba(255,255,255,0.2);">
+                    <div class="progress-fill" id="global-progress-bar" style="width: 0%;"></div>
+                </div>
+                <p style="margin-top: 8px;">📈 Прогнозований рейтинг: <b id="global-rating">0.0</b></p>
+            </div>
+            <div class="grid-2" id="dashboard-subjects"></div>
+        </section>
+
+        <section id="page-deadlines" class="page">
+            <h1>⏰ Центр дедлайнів</h1>
+            <p class="subtitle">Усі завдання в хронологічному порядку з візуальним маркуванням</p>
+            <div class="card">
+                <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button class="btn btn-sm btn-outline filter-btn filter-btn-active btn-primary" data-filter="all">Всі</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="critical">🔴 Критичні</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="warning">🟡 Термінові</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="info">🔵 Заплановано</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="success">🟢 Здано</button>
+                </div>
+                <p>📅 Сьогодні: <b id="current-date"></b></p>
+                <table id="deadlines-table">
+                    <thead><tr><th>Дата</th><th>Предмет</th><th>Завдання</th><th>Статус</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="page-kanban" class="page">
+            <h1>📋 Канбан-дошка</h1>
+            <p class="subtitle">Візуальний контроль завдань (Drag & Drop)</p>
+            <div style="margin-bottom: 16px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span style="font-weight:600; font-size:0.9rem;">Предмет:</span>
+                    <div id="kanban-nav-menu"></div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; border-left: 2px solid var(--border); padding-left: 20px;">
+                    <span style="font-weight:600; font-size:0.85rem;">Статус:</span>
+                    <button class="btn btn-xs btn-outline kanban-filter-btn kanban-filter-active btn-primary" data-kanban-filter="all">Всі</button>
+                    <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="todo">📝 To Do</button>
+                    <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="progress">⚡ In Progress</button>
+                    <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="done">✅ Done</button>
+                </div>
+            </div>
+            <div class="kanban-board" id="kanban-board">
+                <div class="kanban-column" id="col-todo"><h3>📝 To Do</h3></div>
+                <div class="kanban-column" id="col-progress"><h3>⚡ In Progress</h3></div>
+                <div class="kanban-column" id="col-done"><h3>✅ Done</h3></div>
+            </div>
+        </section>
+
+        <section id="page-achievements" class="page">
+            <h1>🏆 Система досягнень</h1>
+            <p class="subtitle">Гейміфікація академічної успішності</p>
+            <div class="grid-2" id="achievements-list"></div>
+        </section>
+
+        <div id="dynamic-subject-pages"></div>
+
+        <footer>
+            © 2026 StudyTrack | KhNURE · ІТШІ-23-4 | MVP Prototype v6.1 (Drag & Edit Tasks)
+            <br>
+            <button onclick="resetAllData()" style="margin-top: 10px; background: none; border: 1px solid #cbd5e1; color: #94a3b8; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;">Скинути всі дані</button>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="add-subject-modal">
+        <div class="modal">
+            <h3>📥 Додати предмет із шаблону</h3>
+            <p style="color: var(--muted); margin-bottom: 16px;">Оберіть семестр та предмет — система автоматично заповнить список завдань, дедлайни та формули.</p>
+            
+            <label for="semester-select" style="display: block; margin-top: 24px;"><b>Семестр:</b></label>
+            <select id="semester-select" onchange="updateTemplateSelect()">
+                <option value="">-- Оберіть семестр --</option>
+                <option value="1">Семестр 1</option>
+                <option value="2">Семестр 2</option>
+            </select>
+
+            <label for="template-select" style="display: block; margin-top: 16px;"><b>Предмет:</b></label>
+            <select id="template-select" disabled>
+                <option value="">-- Спочатку оберіть семестр --</option>
+            </select>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn btn-outline" onclick="closeAddSubjectModal()">Скасувати</button>
+                <button class="btn btn-primary" onclick="addSubjectFromTemplate()">Додати та заповнити</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-tasks-modal">
+        <div class="modal" style="width: 750px; max-height: 90vh; display: flex; flex-direction: column;">
+            <h3>✏️ Редагування списку завдань</h3>
+            <p style="color: var(--muted); margin-bottom: 16px;">Перетягуйте за значок ☰ щоб змінити порядок. Тут ви можете змінити назви, дедлайни, бали або видалити/додати завдання.</p>
+            
+            <div id="edit-tasks-list" style="overflow-y: auto; padding-right: 8px; flex: 1;">
+                </div>
+            
+            <button class="btn btn-outline" style="margin-top: 16px; align-self: flex-start;" onclick="addNewTaskInEdit()">➕ Додати завдання</button>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <button class="btn btn-outline" onclick="closeEditTasksModal()">Скасувати</button>
+                <button class="btn btn-primary" onclick="saveEditedTasks()">Зберегти зміни</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="points-modal">
+        <div class="modal" style="text-align: center; width: 420px; padding: 40px 30px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px; animation: bounce 0.5s ease;">🎉</div>
+            <h3 style="margin-bottom: 8px;">Завдання виконано!</h3>
+            <p style="color: var(--muted); margin-bottom: 24px;" id="points-modal-task-title"></p>
+            
+            <input type="number" id="points-input" min="0" step="0.1" placeholder="Бал..." 
+                style="font-size: 1.5rem; text-align: center; padding: 14px; width: 60%; margin: 0 auto 12px; display: block; font-weight: 600; color: var(--primary);">
+            
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 24px;">Максимум: <b id="points-modal-max"></b></p>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn btn-outline" onclick="closePointsModal(false)">Скасувати</button>
+                <button class="btn btn-primary" onclick="closePointsModal(true)">Зберегти бал</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal" style="text-align: center; width: 420px; padding: 40px 30px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px; animation: bounce 0.5s ease;">🗑️</div>
+            <h3 style="margin-bottom: 8px;">Видалення предмета</h3>
+            <p style="color: var(--muted); margin-bottom: 24px;">Ви дійсно хочете повністю видалити цей предмет та всі його завдання? Цю дію неможливо скасувати.</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Скасувати</button>
+                <button class="btn btn-primary" style="background: var(--danger); border-color: var(--danger);" onclick="confirmDelete()">Видалити</button>
+            </div>
+        </div>
+    </div>
+    <script src="JavaScript/script.js"></script>
+</body>
+</html>
