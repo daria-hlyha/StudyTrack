@@ -1,139 +1,134 @@
+// ======================== ПІДКЛЮЧЕННЯ SUPABASE ТА АВТОРИЗАЦІЯ ========================
+const supabaseUrl = 'https://gdqxxqunaxnkbbislvhg.supabase.co';
+const supabaseKey = 'sb_publishable_lEn0DNIANgsndpfehGnCog_pTWy0y9i';
 
-// ======================== ДАНІ ========================
-const today = new Date(); 
-document.getElementById('current-date').textContent = today.toLocaleDateString('uk-UA', {
-    day: 'numeric', month: 'long', year: 'numeric'
-});
+// 💡 ВИПРАВЛЕННЯ: Змінили назву на supabaseClient, щоб не конфліктувало з бібліотекою
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-const defaultSubjectsData = {
-    mn: {
-        key: 'mn', name: 'Машинне навчання', fullName: 'Машинне навчання', type: 'exam', semester: 2,
-        tasks: [
-            { id: 'mn1', title: 'Практична робота 1', deadline: '2026-03-26', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn2', title: 'Практична робота 2', deadline: '2026-04-08', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn3', title: 'Тест 1', deadline: '2026-03-12', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn4', title: 'Практична робота 3', deadline: '2026-04-24', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn5', title: 'Тест 2', deadline: '2026-04-08', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn6', title: 'Практична робота 4', deadline: '2026-05-15', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn7', title: 'Тест 3', deadline: '2026-04-23', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn8', title: 'Практична робота 5', deadline: '2026-06-04', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn9', title: 'Тест 4', deadline: '2026-04-29', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn10', title: 'Тест 5', deadline: '2026-05-20', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'mn11', title: 'ІСПИТ', deadline: '2026-06-20', maxPoints: 100, points: 0, status: 'todo' },
-        ]
-    },
-    pis: {
-        key: 'pis', name: 'Проектування ІС', fullName: 'Проектування інформаційних систем', type: 'exam', semester: 2,
-        tasks: [
-            { id: 'pis1', title: 'Практична робота 1', deadline: '2026-03-18', maxPoints: 20, points: 0, status: 'todo' },
-            { id: 'pis2', title: 'Практична робота 2', deadline: '2026-04-02', maxPoints: 20, points: 0, status: 'todo' },
-            { id: 'pis3', title: 'Практична робота 3', deadline: '2026-04-16', maxPoints: 15, points: 0, status: 'todo' },
-            { id: 'pis4', title: 'Практична робота 4', deadline: '2026-05-14', maxPoints: 15, points: 0, status: 'todo' },
-            { id: 'pis5', title: 'Практична робота 5', deadline: '2026-05-28', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'pis6', title: 'Практична робота 6', deadline: '2026-05-28', maxPoints: 20, points: 0, status: 'todo' },
-            { id: 'pis7', title: 'ІСПИТ', deadline: '2026-06-25', maxPoints: 40, points: 0, status: 'todo' },
-        ]
-    },
-    tpr: { 
-        key: 'tpr', name: 'Теорія прийняття рішень', fullName: 'Теорія прийняття рішень', type: 'exam', semester: 2, tasks: [ 
-            { id: 'tpr1', title: 'Практична робота 1', deadline: '2026-03-31', maxPoints: 10, points: 0, status: 'todo' }, 
-            { id: 'tpr2', title: 'Практична робота 2', deadline: '2026-04-07', maxPoints: 10, points: 0, status: 'todo' }, 
-            { id: 'tpr3', title: 'Практична робота 3', deadline: '2026-05-05', maxPoints: 12, points: 0, status: 'todo' }, 
-            { id: 'tpr4', title: 'Практична робота 4', deadline: '2026-05-19', maxPoints: 18, points: 0, status: 'todo' }, 
-            { id: 'tpr5', title: 'Практична робота 5', deadline: '2026-06-02', maxPoints: 10, points: 0, status: 'todo' }, 
-            { id: 'tpr6', title: 'ІСПИТ', deadline: '2026-06-20', maxPoints: 40, points: 0, status: 'todo' } 
-        ] 
-    },
-    vd: { 
-        key: 'vd', name: 'Візуалізація даних', fullName: 'Візуалізація даних', type: 'pass', semester: 2, tasks: [ 
-            { id: 'vd1', title: 'Практична робота 1', deadline: '2026-03-02', maxPoints: 15, points: 0, status: 'todo' }, 
-            { id: 'vd2', title: 'Практична робота 2', deadline: '2026-03-02', maxPoints: 25, points: 0, status: 'todo' }, 
-            { id: 'vd3', title: 'Практична робота 3', deadline: '2026-05-15', maxPoints: 25, points: 0, status: 'todo' }, 
-            { id: 'vd4', title: 'Практична робота 4', deadline: '2026-05-26', maxPoints: 25, points: 0, status: 'todo' }, 
-            { id: 'vd5', title: 'Практична робота 5', deadline: '2026-05-28', maxPoints: 9, points: 0, status: 'todo' } 
-        ] 
-    },
-    devo: { 
-        key: 'devo', name: 'DevOps та Cloud', fullName: 'DevOps та основи Cloud-застосунків', type: 'pass', semester: 2, tasks: [ 
-            { id: 'devo1', title: 'Практична робота 1', deadline: '2026-04-13', maxPoints: 20, points: 0, status: 'todo' }, 
-            { id: 'devo2', title: 'Практична робота 2', deadline: '2026-05-20', maxPoints: 25, points: 0, status: 'todo' }, 
-            { id: 'devo3', title: 'Практична робота 3', deadline: '2026-06-05', maxPoints: 25, points: 0, status: 'todo' } 
-        ] 
-    },
-    uzhcp: { 
-        key: 'uzhcp', name: 'Управління ЖЦП', fullName: 'Управління життєвим циклом програмного продукту', type: 'pass', semester: 2, tasks: [ 
-            { id: 'uzhcp1', title: 'Практична робота 1', deadline: '2026-04-20', maxPoints: 20, points: 0, status: 'todo' }, 
-            { id: 'uzhcp2', title: 'Практична робота 2', deadline: '2026-05-15', maxPoints: 25, points: 0, status: 'todo' }, 
-            { id: 'uzhcp3', title: 'Практична робота 3', deadline: '2026-06-01', maxPoints: 25, points: 0, status: 'todo' } 
-        ] 
-    },
-    fv: { 
-        key: 'fv', name: 'Фізичне виховання', fullName: 'Фізичне виховання', type: 'pass', semester: 2, tasks: [ 
-            { id: 'fv1', title: 'Тест 1', deadline: '2026-03-15', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv2', title: 'Тест 2', deadline: '2026-03-20', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv3', title: 'Тест 3', deadline: '2026-04-10', maxPoints: 10, points: 0, status: 'todo' }, 
-            { id: 'fv4', title: 'Тест 4', deadline: '2026-04-15', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv5', title: 'Тест 5', deadline: '2026-04-20', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv6', title: 'Тест 6', deadline: '2026-04-25', maxPoints: 4, points: 0, status: 'todo' }, 
-            { id: 'fv7', title: 'Тест 7', deadline: '2026-05-05', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv8', title: 'Тест 8', deadline: '2026-05-10', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv9', title: 'Тест 9', deadline: '2026-05-15', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv10', title: 'Тест 10', deadline: '2026-05-20', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv11', title: 'Тест 11', deadline: '2026-05-25', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv12', title: 'Тест 12', deadline: '2026-05-30', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv13', title: 'Тест 13', deadline: '2026-06-05', maxPoints: 3, points: 0, status: 'todo' },
-            { id: 'fv14', title: 'Тест 14', deadline: '2026-06-05', maxPoints: 3, points: 0, status: 'todo' },
-            { id: 'fv15', title: 'Тест 15', deadline: '2026-05-30', maxPoints: 3, points: 0, status: 'todo' }, 
-            { id: 'fv16', title: 'Анкета студента', deadline: '2026-06-05', maxPoints: 10, points: 0, status: 'todo' },
-            { id: 'fv17', title: 'Анкета курса', deadline: '2026-06-05', maxPoints: 5, points: 0, status: 'todo' },
-            { id: 'fv18', title: 'Контрольне тестування', deadline: '2026-05-30', maxPoints: 20, points: 0, status: 'todo' }, 
-            { id: 'fv19', title: 'Контрольне тестування 1-3 курси', deadline: '2026-06-05', maxPoints: 20, points: 0, status: 'todo' },
-            { id: 'fv20', title: 'Відеоролик про свою регулярну спортивну активність', deadline: '2026-06-05', maxPoints: 15, points: 0, status: 'todo' }
-        ] 
-    }
-};
+const KEY_FILTER = 'dashboard_semester_filter';
+
+let currentUser = null;
+let subjectsData = {}; 
+let addedCustomSubjects = {};
 
 const subjectTemplates = {
-    1: [ { value: 'math', label: '📐 Вища математика' }, { value: 'english', label: '🌍 Англійська мова' }, { value: 'physics', label: '⚛️ Фізика' }, { value: 'programming', label: '💻 Основи програмування' } ],
-    2: [ { value: 'db', label: '🗄️ Бази даних' }, { value: 'web', label: '🌐 Веб-технології' }, { value: 'security', label: '🔐 Кібербезпека' }, { value: 'mnc', label: '🤖 Машинне навчання: Міждисциплінарна курсова робота' } ]
+    1: [ { value: 'OK1', label: '📝 Українське фахове мовлення' }, { value: 'OK2-1', label: '🌍 Іноземна мова (Ч. 1)' }, { value: 'OK5', label: '📐 Лінійна алгебра і аналітична геометрія' }, { value: 'OK8', label: '💻 Алгоритмізація та програмування' }, { value: 'OK9', label: '📖 Теорія алгоритмів' } ],
+    2: [ { value: 'OK4', label: '⚖️ Основи права' }, { value: 'OK2-2', label: '🌍 Іноземна мова (Ч. 2)' }, { value: 'OK6', label: '📈 Математичний аналіз' }, { value: 'OK7', label: '⚛️ Фізика' }, { value: 'OK10', label: '🧮 Дискретна математика для КН' }, { value: 'OK11', label: '📊 Алгоритми та структури даних' }, { value: 'OK12', label: '🔢 Чисельні методи у КН' }, { value: 'OK13', label: '☕ Об\'єктно-орієнтоване програмування' } ],
+    3: [ { value: 'OK2-3', label: '🌍 Іноземна мова (Ч. 3)' }, { value: 'OK14', label: '🗄️ Організація баз даних та знань' }, { value: 'OK15', label: '🖥️ Інженерія комп\'ютерних систем та мереж' }, { value: 'OK16', label: '🎲 Ймовірність, статистика та випадкові процеси' }, { value: 'OK17', label: '🌐 Вебтехнології та вебдизайн' }, { value: 'OK24', label: '🔷 Програмування на C#' }, { value: 'OK25', label: 'λ Функціональне програмування' } ],
+    4: [ { value: 'OK2-4', label: '🌍 Іноземна мова (Ч. 4 - Іспит)' }, { value: 'OK3', label: '🧠 Філософія' }, { value: 'OK18', label: '📱 Крос-платформне програмування' }, { value: 'OK19', label: '📈 Дослідження операцій' }, { value: 'OK26', label: '🐍 Програмування на Python' }, { value: 'OK27', label: '📊 Статистичні методи аналізу даних' }, { value: 'OK28', label: '🤖 Введення до штучного інтелекту' } ],
+    5: [ { value: 'OK20', label: '📉 Системний аналіз' }, { value: 'OK21', label: '⛏️ Інтелектуальний аналіз даних' }, { value: 'OK29', label: '🧬 Формальні системи і мат. основи' } ],
+    6: [ { value: 'OK22', label: '🧠 Теорія прийняття рішень' }, { value: 'OK30', label: '🤖 Машинне навчання' }, { value: 'OK31', label: '📑 Міждисциплінарна курсова робота' }, { value: 'OK32', label: '📐 Проектування інформаційних систем' }, { value: 'VB6', label: '☁️ DevOps та основи Cloud-застосунків' }, { value: 'VB8', label: '📈 Візуалізація та аналіз даних' }, { value: 'VB23', label: '🔄 Управління життєвим циклом програмного продукту' } ],
+    7: [ { value: 'OK23', label: '💼 Економіка та бізнес' }, { value: 'OK33', label: '🧠 Штучні нейронні мережі' } ],
+    8: [ { value: 'OK34', label: '🏢 Передатестаційна практика' }, { value: 'OK35', label: '🎓 Кваліфікаційна робота' } ]
 };
 
-// ======================== СТАН ДАНИХ (LOCALSTORAGE) ========================
+// Перевіряємо, чи студент вже залогінений (при оновленні сторінки)
+window.addEventListener('load', async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        document.getElementById('login-modal').classList.remove('show');
+        console.log("Увійшли як:", currentUser.email);
+        loadDataFromSupabase(); // 📍 ДОДАЄМО СЮДИ (щоб предмети не зникали при Ctrl+F5)
+    }
+});
 
-const currentFileName = window.location.pathname.split('/').pop() || 'default_studytrack';
-
-const KEY_SUBJECTS = 'studyTrack_subjects_v3_' + currentFileName;
-const KEY_CUSTOM = 'studyTrack_custom_v3_' + currentFileName;
-const KEY_FILTER = 'studyTrack_filter_v3_' + currentFileName; 
-
-let subjectsData;
-let addedCustomSubjects;
-
-try {
-    const savedSubjects = localStorage.getItem(KEY_SUBJECTS);
-    const savedCustom = localStorage.getItem(KEY_CUSTOM);
+// 1. ФУНКЦІЯ ВХОДУ (Для існуючих користувачів)
+async function handleLogin() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl = document.getElementById('auth-error');
     
-    subjectsData = savedSubjects ? JSON.parse(savedSubjects) : defaultSubjectsData;
-    addedCustomSubjects = savedCustom ? JSON.parse(savedCustom) : {};
-} catch (e) {
-    console.error("Помилка завантаження з LocalStorage, використовуються дані за замовчуванням.", e);
-    subjectsData = defaultSubjectsData;
-    addedCustomSubjects = {};
-}
+    if (!email || password.length < 6) {
+        errorEl.style.color = 'var(--danger)';
+        errorEl.textContent = 'Введіть email та пароль (від 6 символів)'; return;
+    }
 
-function saveData() {
-    localStorage.setItem(KEY_SUBJECTS, JSON.stringify(subjectsData));
-    localStorage.setItem(KEY_CUSTOM, JSON.stringify(addedCustomSubjects));
-}
+    errorEl.style.color = 'var(--primary)';
+    errorEl.textContent = 'Вхід у систему...';
 
-function resetAllData() {
-    if(confirm("Ви впевнені, що хочете скинути всі дані до початкових? (Усі бали та додані предмети зникнуть)")) {
-        localStorage.removeItem(KEY_SUBJECTS);
-        localStorage.removeItem(KEY_CUSTOM);
-        localStorage.removeItem(KEY_FILTER); 
-        location.reload();
+const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        errorEl.style.color = 'var(--danger)';
+        errorEl.textContent = 'Помилка входу: ' + error.message;
+    } else {
+        // САМОЛІКУВАННЯ: Якщо профілю в Users немає, створюємо його!
+        const { data: checkUser } = await supabaseClient.from('Users').select('users_id').eq('email', email).single();
+        if (!checkUser) {
+            await supabaseClient.from('Users').insert([{ email: email, full_name: 'Студент ХНУРЕ', role: 'student' }]);
+        }
+        completeLogin(data.user);
     }
 }
+
+// 2. ФУНКЦІЯ РЕЄСТРАЦІЇ (Для нових користувачів)
+async function handleSignUp() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl = document.getElementById('auth-error');
+    
+    if (!email || password.length < 6) {
+        errorEl.style.color = 'var(--danger)';
+        errorEl.textContent = 'Введіть email та пароль (від 6 символів)'; return;
+    }
+    if (!email.endsWith('@nure.ua')) {
+        errorEl.style.color = 'var(--danger)';
+        errorEl.textContent = 'Помилка: Дозволено лише для пошт @nure.ua!'; return;
+    }
+
+    errorEl.style.color = 'var(--primary)';
+    errorEl.textContent = 'Створення акаунту...';
+
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+    if (error) {
+        errorEl.style.color = 'var(--danger)';
+        errorEl.textContent = 'Помилка реєстрації: ' + error.message;
+    } else {
+        // Додаємо запис у таблицю Users для збереження профілю
+        await supabaseClient.from('Users').insert([{ email: email, full_name: 'Студент ХНУРЕ', role: 'student' }]);
+        
+        if (data.session) {
+            // Якщо у налаштуваннях Supabase підтвердження пошти ВИМКНЕНО — впускаємо одразу
+            completeLogin(data.user);
+        } else {
+            // Якщо підтвердження УВІМКНЕНО — просимо перейти на пошту
+            errorEl.style.color = 'var(--success)';
+            errorEl.textContent = '📩 Акаунт створено! Перевірте пошту, клікніть на посилання у листі, після чого поверніться сюди та натисніть кнопку "Увійти".';
+        }
+    }
+}
+
+// Функція закриття вікна і старту сайту
+function completeLogin(user) {
+    currentUser = user;
+    loadDataFromSupabase();
+    document.getElementById('login-modal').classList.remove('show');
+    console.log("Успішний вхід:", currentUser.email);
+    renderAll();
+}
+
+// Функція виходу з акаунту
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.reload(); // Перезавантажуємо сторінку, знову з'явиться вікно входу
+}
+
+// Функція видалення акаунту
+async function handleDeleteAccount() {
+    if (confirm('Ви впевнені, що хочете видалити всі свої дані? Цю дію неможливо скасувати!')) {
+        // Спочатку видаляємо профіль користувача з нашої таблиці Users
+        await supabaseClient.from('Users').delete().eq('email', currentUser.email);
+        
+        alert('Ваші особисті дані успішно видалено.');
+        
+        // Потім розлогінюємо його
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    }
+}
+
 
 let currentKanbanSubject = 'all';
 let pendingPointsCallback = null; 
@@ -154,14 +149,18 @@ function getDeadlineColor(task) {
     if (task.status === 'done') return 'success'; 
     const d = new Date(task.deadline);
     d.setHours(0, 0, 0, 0);
-    const todayDate = new Date(today);
+    
+    // 💡 ВИПРАВЛЕНО: тепер беремо поточну дату системи
+    const todayDate = new Date(); 
     todayDate.setHours(0, 0, 0, 0);
+    
     const diff = (d - todayDate) / (1000 * 60 * 60 * 24); 
     if (diff < 0) return 'danger'; 
     if (diff <= 2) return 'warning'; 
     return 'info'; 
 }
-function getDeadlineBadge(task) { const color = getDeadlineColor(task); if (color === 'danger') return '<span class="badge badge-danger">🔴 Прострочено</span>'; if (color === 'warning') return '<span class="badge badge-warning">🟡 Терміново</span>'; if (color === 'success') return '<span class="badge badge-success">🟢 Вчасно</span>'; return '<span class="badge badge-info">🔵 Заплановано</span>'; }
+
+function getDeadlineBadge(task) { const color = getDeadlineColor(task); if (color === 'danger') return '<span class="badge badge-danger">🔴 Прострочено</span>'; if (color === 'warning') return '<span class="badge badge-warning">🟡 Терміново</span>'; if (color === 'success') return '<span class="badge badge-success">🟢 Здано</span>'; return '<span class="badge badge-info">🔵 Заплановано</span>'; }
 
 function calcPassProgress(tasks) {
     const earned = tasks.reduce((s, t) => s + (t.points || 0), 0);
@@ -299,38 +298,59 @@ function removeTaskInEdit(taskId) {
     }
 }
 
-function saveEditedTasks() {
+async function saveEditedTasks() {
     if (!pendingEditSubjectKey) return;
-    
-    const targetSubj = subjectsData[pendingEditSubjectKey] || addedCustomSubjects[pendingEditSubjectKey];
-    if (!targetSubj) return;
+    const subj = getAllSubjects()[pendingEditSubjectKey];
+    if (!subj || !subj.dbId) return;
 
-    const newTasks = [];
     const rows = document.querySelectorAll('#edit-tasks-list .edit-task-row');
-    
+    const newTasks = [];
+
     rows.forEach(row => {
         const id = row.dataset.id;
         const title = row.querySelector('.edit-title').value.trim() || 'Без назви';
         const deadline = row.querySelector('.edit-deadline').value || new Date().toISOString().split('T')[0];
         const maxPoints = parseFloat(row.querySelector('.edit-max-points').value) || 10;
-        
-        // Знаходимо існуюче завдання, щоб зберегти його оцінку і статус
-        const existingTask = targetSubj.tasks.find(t => t.id === id) || tempEditTasks.find(t => t.id === id);
-        
+        const existingTask = subj.tasks.find(t => t.id === id) || tempEditTasks.find(t => t.id === id);
+
         newTasks.push({
-            id: existingTask.id,
+            user_tasks_id: existingTask ? existingTask.id : undefined, // для існуючих
             title: title,
             deadline: deadline,
-            maxPoints: maxPoints,
-            points: existingTask.points || 0,
-            status: existingTask.status || 'todo'
+            max_points: maxPoints,
+            points: existingTask ? (existingTask.points || 0) : 0,
+            status: existingTask ? (existingTask.status || 'todo') : 'todo',
+            sort_order: newTasks.length + 1,
+            // user_subjects_id додамо пізніше
         });
     });
 
-    targetSubj.tasks = newTasks;
-    saveData();
-    renderAll();
-    closeEditTasksModal();
+    try {
+        // Видаляємо всі старі завдання цього предмета
+        await supabaseClient
+            .from('User_Tasks')
+            .delete()
+            .eq('user_subjects_id', subj.dbId);
+
+        // Вставляємо новий список
+        const tasksToInsert = newTasks.map(t => ({
+            user_subjects_id: subj.dbId,
+            title: t.title,
+            deadline: t.deadline,
+            max_points: t.max_points,
+            points: t.points,
+            status: t.status,
+            sort_order: t.sort_order
+        }));
+
+        await supabaseClient.from('User_Tasks').insert(tasksToInsert);
+
+        closeEditTasksModal();
+        loadDataFromSupabase();
+    } catch (err) {
+        console.error('Помилка збереження редагованих завдань:', err);
+        alert('Не вдалося зберегти зміни.');
+    }
 }
 
 // ======================== МОДАЛЬНЕ ВІКНО ДЛЯ БАЛІВ ========================
@@ -368,9 +388,11 @@ document.getElementById('points-input').addEventListener('keypress', (e) => {
 });
 
 // ======================== МОДАЛЬНЕ ВІКНО ВИДАЛЕННЯ ========================
-function openDeleteModal(key, e) {
-    if(e) { e.stopPropagation(); e.preventDefault(); }
+let pendingDeleteId = null; // Глобальна змінна
+
+function openDeleteModal(key, dbId) {
     pendingDeleteSubject = key;
+    pendingDeleteId = dbId; // Зберігаємо унікальний ID з бази
     document.getElementById('delete-modal').classList.add('show');
 }
 
@@ -379,26 +401,72 @@ function closeDeleteModal() {
     pendingDeleteSubject = null;
 }
 
-function confirmDelete() {
-    if (pendingDeleteSubject) {
-        const key = pendingDeleteSubject;
+async function confirmDelete() {
+    if (!pendingDeleteSubject) return;
+    
+    const key = pendingDeleteSubject;
+    const subj = subjectsData[key];
+    
+    // Якщо предмета немає або він не має ID з бази даних, видаляємо лише локально
+    if (!subj || !subj.dbId) {
         if(subjectsData[key]) delete subjectsData[key];
         if(addedCustomSubjects[key]) delete addedCustomSubjects[key];
         if(currentKanbanSubject === key) currentKanbanSubject = 'all';
-        saveData();
         renderAll();
         navigateTo('dashboard');
         closeDeleteModal();
+        return;
+    }
+
+    try {
+        // 1. Спочатку видаляємо всі пов'язані завдання з хмари (User_Tasks)
+        const { error: tasksErr } = await supabaseClient
+            .from('User_Tasks')
+            .delete()
+            .eq('user_subjects_id', subj.dbId);
+            
+        if (tasksErr) throw new Error("Не вдалося видалити завдання з хмари: " + tasksErr.message);
+
+        // 2. Тепер видаляємо сам предмет із хмари (User_Subjects)
+        const { error: subjErr } = await supabaseClient
+            .from('User_Subjects')
+            .delete()
+            .eq('user_subjects_id', subj.dbId);
+            
+        if (subjErr) throw new Error("Не вдалося видалити дисципліну з хмари: " + subjErr.message);
+
+        // 3. Очищаємо локальні змінні системи
+        if (subjectsData[key]) delete subjectsData[key];
+        if (currentKanbanSubject === key) currentKanbanSubject = 'all';
+
+        alert("🗑️ Дисципліну та її журнал завдань повністю видалено з бази даних!");
+        closeDeleteModal();
+        
+        // 4. Перезавантажуємо чисті дані та переходимо на головну сторінку
+        loadDataFromSupabase();
+        navigateTo('dashboard');
+
+    } catch (err) {
+        console.error("Помилка видалення:", err);
+        alert("Критична помилка: " + err.message);
     }
 }
 
 // ======================== РЕНДЕРИНГ ========================
 function renderNav() {
     const allSubjects = getAllSubjects();
-    document.getElementById('sem-group-1').innerHTML = '';
-    document.getElementById('sem-group-2').innerHTML = '';
+    
+    // Очищаємо всі 8 груп перед малюванням
+    for (let i = 1; i <= 8; i++) {
+        let group = document.getElementById('sem-group-' + i);
+        if (group) group.innerHTML = '';
+    }
+
+    // Розкидаємо предмети по відповідних групах
     for (const [key, subj] of Object.entries(allSubjects)) {
-        const group = subj.semester === 1 ? document.getElementById('sem-group-1') : document.getElementById('sem-group-2');
+        const group = document.getElementById('sem-group-' + subj.semester);
+        if (!group) continue;
+        
         const link = document.createElement('a');
         link.href = '#subject-' + key;
         link.dataset.page = 'subject-' + key;
@@ -442,18 +510,26 @@ function renderDashboard() {
         return;
     }
     container.innerHTML = keys.map(key => {
-        const subj = all[key];
-        const stats = calcSubjectProgress(key);
-        const sem = subj.semester === 1 ? '<span class="semester-badge sem1">Семестр 1</span>' : '<span class="semester-badge sem2">Семестр 2</span>';
-        return `<div class="card"><h4>${getSubjectIcon(key)} ${subj.name} ${sem}</h4>
-        <p>Прогрес: <b>${stats.percent}%</b> (${stats.earned.toFixed(1)}/${stats.total} балів)</p>
-        <div class="progress-bg"><div class="progress-fill ${getProgressClass(stats.percent)}" style="width:${stats.percent}%;"></div></div>
-        <p style="margin-top:8px;">Здано: ${stats.doneCount} | В процесі: ${stats.progressCount} | До виконання: ${stats.todoCount}</p>
-        <a href="#subject-${key}" class="btn btn-outline btn-sm" style="margin-top: 14px; display: inline-block;" onclick="navigateTo('subject-${key}', event)">Відкрити предмет →</a></div>`;
-    }).join('');
+            const subj = all[key];
+            const stats = calcSubjectProgress(key);
+            
+            // 📍 Універсальний бейдж: створює класи sem1, sem2, sem3... sem8 залежно від бази даних
+            const sem = subj.semester ? `<span class="semester-badge sem${subj.semester}">Семестр ${subj.semester}</span>` : '';
+            
+            return `<div class="card"><h4>${getSubjectIcon(key)} ${subj.name} ${sem}</h4>
+            <p>Прогрес: <b>${stats.percent}%</b> (${stats.earned.toFixed(1)}/${stats.total} балів)</p>
+            <div class="progress-bg"><div class="progress-fill ${getProgressClass(stats.percent)}" style="width:${stats.percent}%;"></div></div>
+            <p style="margin-top:8px;">Здано: ${stats.doneCount} | В процесі: ${stats.progressCount} | До виконання: ${stats.todoCount}</p>
+            <a href="#subject-${key}" class="btn btn-outline btn-sm" style="margin-top: 14px; display: inline-block;" onclick="navigateTo('subject-${key}', event)">Відкрити предмет →</a></div>`;
+        }).join('');
 }
 
 function renderDeadlines() {
+    const currentDateEl = document.getElementById('current-date');
+    if (currentDateEl) {
+        currentDateEl.textContent = new Date().toLocaleDateString('uk-UA');
+    }
+
     const active = Array.from(document.querySelectorAll('.filter-btn.filter-btn-active')).map(b => b.dataset.filter);
     const showAll = active.includes('all') || active.length === 0;
     const colorMap = { danger: 'critical', warning: 'warning', success: 'success', info: 'info' };
@@ -476,7 +552,7 @@ function renderKanbanMenu() {
     const menu = document.getElementById('kanban-nav-menu');
     const all = getAllSubjects();
     let html = `<div class="kanban-menu"><div class="kanban-menu-item ${currentKanbanSubject==='all'?'active':''}" onclick="setKanbanSubject('all', event)">📚 Усі предмети</div>`;
-    [1,2].forEach(sem => {
+    [1,2,3,4,5,6,7,8].forEach(sem => {
         const items = Object.entries(all).filter(([k,s]) => s.semester === sem);
         if (items.length) {
             html += `<div class="kanban-menu-item ${currentKanbanSubject==='sem_'+sem?'active':''}" onclick="setKanbanSubject('sem_${sem}', event)">Семестр ${sem} ▾<div class="kanban-dropdown">`;
@@ -519,8 +595,11 @@ function renderKanban() {
         
         col.innerHTML = `<h3>${label} <small>(${filtered.length})</small></h3>`;
         filtered.forEach(task => {
-            col.innerHTML += `<div class="kanban-card" draggable="true" data-task-id="${task.id}" data-subject="${task.subjectKey}">
-            <strong>${task.title}</strong><br><small>📅 ${new Date(task.deadline).toLocaleDateString('uk-UA')} • ${task.points}/${task.maxPoints} балів</small><br><small style="color:var(--muted);">${task.subjectName}</small></div>`;
+            col.innerHTML += `<div class="kanban-card" draggable="true" data-task-id="${task.id}" data-subject="${task.subjectKey}" title="Перетягніть картку в іншу колонку, щоб змінити статус">
+            <strong>${task.title}</strong><br>
+            <small>📅 ${new Date(task.deadline).toLocaleDateString('uk-UA')} • ${task.points}/${task.maxPoints} балів</small><br>
+            <small style="color:var(--muted);">${task.subjectName}</small>
+            </div>`;
         });
     });
     
@@ -550,37 +629,27 @@ function attachDragEvents() {
         });
         card.addEventListener('dragend', () => card.classList.remove('dragging'));
     });
+
+    // Використовуємо on... замість addEventListener, щоб після кожного renderAll()
+    // не накопичувалися дублікати drop-обробників на тих самих колонках.
     document.querySelectorAll('.kanban-column').forEach(col => {
-        col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
-        col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
-        col.addEventListener('drop', e => {
+        col.ondragover = e => { e.preventDefault(); col.classList.add('drag-over'); };
+        col.ondragleave = () => col.classList.remove('drag-over');
+        col.ondrop = async e => {
             e.preventDefault();
             col.classList.remove('drag-over');
-            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-            const newStatus = col.id === 'col-todo' ? 'todo' : (col.id === 'col-progress' ? 'progress' : 'done');
-            const all = getAllSubjects();
-            const task = all[data.subject]?.tasks.find(t => t.id === data.id);
-            if (task) {
-                const oldStatus = task.status;
-                if (newStatus === 'done' && task.points === 0 && task.maxPoints > 0) {
-                    openPointsModal(task, (val) => {
-                        if (val !== null) {
-                            task.points = Math.min(val, task.maxPoints);
-                            task.status = 'done';
-                        } else {
-                            task.status = oldStatus; 
-                        }
-                        saveData();
-                        renderAll();
-                    });
-                } else {
-                    task.status = newStatus;
-                    if (newStatus !== 'done') task.points = 0;
-                    saveData();
-                    renderAll();
-                }
+
+            let data = null;
+            try {
+                data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            } catch (err) {
+                console.error('Некоректні дані drag&drop:', err);
+                return;
             }
-        });
+
+            const newStatus = col.id === 'col-todo' ? 'todo' : (col.id === 'col-progress' ? 'progress' : 'done');
+            await updateStatus(data.subject, data.id, newStatus);
+        };
     });
 }
 
@@ -594,11 +663,9 @@ function renderAchievements() {
     }
     const avg = cnt > 0 ? sumPercent / cnt : 0;
     const ach = [
-        { icon:'🎯', title:'Перший дедлайн', desc:'Здайте одне завдання вчасно', unlocked: totalDone>=1 },
+        { icon:'🎯', title:'Перший дедлайн', desc:'Здайте одне завдання', unlocked: totalDone>=1 },
         { icon:'🔥', title:'Серія з 3', desc:'Здайте 3 завдання поспіль', unlocked: totalDone>=3 },
         { icon:'🏅', title:'Відмінник', desc:'Загальний прогрес > 90%', unlocked: avg>90 },
-        { icon:'⚡', title:'Швидкий старт', desc:'Додайте предмет із шаблону', unlocked: Object.keys(addedCustomSubjects).length>0 },
-        { icon:'🧠', title:'Магістр дедлайнів', desc:'Жодного простроченого', unlocked: totalOverdue===0 && totalDone>0 },
         { icon:'📚', title:'Повне завантаження', desc:'Маєте 5+ предметів', unlocked: cnt>=5 }
     ];
     document.getElementById('achievements-list').innerHTML = ach.map(a =>
@@ -612,12 +679,12 @@ function renderAllSubjectPages() {
     const currentHash = window.location.hash.replace('#','');
     container.innerHTML = Object.keys(all).map(key => {
         const subj = all[key];
-        const sem = subj.semester===1?'Семестр 1':'Семестр 2';
+        const sem = 'Семестр ' + subj.semester;
         
         // 💡 Додано кнопку "✏️ Редагувати завдання"
         return `<section id="page-subject-${key}" class="page ${currentHash==='subject-'+key?'active':''}">
         <h1>${getSubjectIcon(key)} ${subj.name}</h1>
-        <p class="subtitle">${subj.fullName} • Тип: <b>${subj.type==='exam'?'Іспит':'Залік'}</b> • <span class="semester-badge ${subj.semester===1?'sem1':'sem2'}">${sem}</span></p>
+        <p class="subtitle">${subj.fullName} • Тип: <b>${subj.type==='exam'?'Іспит':'Залік'}</b> • <span class="semester-badge sem${subj.semester}">${sem}</span></p>
         <div class="card" id="subject-${key}-header"></div>
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -666,48 +733,104 @@ function renderSubjectPage(key) {
     }
 }
 
-function updatePoints(subjectKey, taskId, newVal) {
-    const task = getAllSubjects()[subjectKey]?.tasks.find(t => t.id === taskId);
-    if (task) {
-        task.points = Math.min(Math.max(0, parseFloat(newVal.replace(',', '.')) || 0), task.maxPoints);
-        if (task.points > 0 && task.status !== 'done') task.status = 'done';
-        if (task.points === 0 && task.status === 'done') task.status = 'todo';
-        saveData();
-        renderAll();
-    }
+function normalizeTaskStatus(status) {
+    return ['todo', 'progress', 'done'].includes(status) ? status : 'todo';
 }
 
-function updateStatus(subjectKey, taskId, newStatus) {
-    const task = getAllSubjects()[subjectKey]?.tasks.find(t => t.id === taskId);
-    if (!task) return;
-    const oldStatus = task.status;
+function findLocalTask(subjectKey, taskId) {
+    const subj = getAllSubjects()[subjectKey];
+    if (!subj) return null;
+    const task = subj.tasks.find(t => String(t.id) === String(taskId));
+    return task ? { subj, task } : null;
+}
 
-    if (newStatus === 'done' && task.points === 0 && task.maxPoints > 0) {
-        openPointsModal(task, (val) => {
+async function saveTaskPatch(subjectKey, taskId, patch) {
+    const found = findLocalTask(subjectKey, taskId);
+    if (!found) {
+        console.error('Завдання не знайдено локально:', { subjectKey, taskId, patch });
+        alert('Не вдалося знайти завдання на сторінці. Оновіть сторінку та спробуйте ще раз.');
+        return false;
+    }
+
+    const dbPatch = {};
+    if (patch.deadline !== undefined) dbPatch.deadline = patch.deadline;
+    if (patch.points !== undefined) dbPatch.points = Number(patch.points) || 0;
+    if (patch.status !== undefined) dbPatch.status = normalizeTaskStatus(patch.status);
+
+    const { data, error } = await supabaseClient
+        .from('User_Tasks')
+        .update(dbPatch)
+        .eq('user_tasks_id', taskId)
+        .select('user_tasks_id, deadline, points, status, max_points')
+        .maybeSingle();
+
+    if (error) {
+        console.error('Помилка оновлення завдання:', error, { subjectKey, taskId, dbPatch });
+        alert('Не вдалося зберегти зміну в базі даних: ' + error.message);
+        renderAll();
+        return false;
+    }
+
+    if (!data) {
+        console.error('Supabase не повернув оновлений рядок:', { subjectKey, taskId, dbPatch });
+        alert('Зміна не застосувалася: рядок завдання не знайдено або немає прав на оновлення.');
+        await loadDataFromSupabase();
+        return false;
+    }
+
+    // Одразу оновлюємо локальні дані, щоб підсумок, бейдж і канбан мінялися без ручного перезавантаження.
+    if (data.deadline !== undefined && data.deadline !== null) {
+        found.task.deadline = String(data.deadline).split('T')[0];
+    }
+    if (data.points !== undefined && data.points !== null) {
+        found.task.points = parseFloat(data.points) || 0;
+    }
+    if (data.status !== undefined && data.status !== null) {
+        found.task.status = normalizeTaskStatus(data.status);
+    }
+
+    renderAll();
+    return true;
+}
+
+async function updatePoints(subjectKey, taskId, newVal) {
+    const found = findLocalTask(subjectKey, taskId);
+    if (!found) return;
+
+    const rawValue = String(newVal).replace(',', '.');
+    const points = Math.min(Math.max(0, parseFloat(rawValue) || 0), found.task.maxPoints);
+    const newStatus = points > 0 ? 'done' : (found.task.status === 'done' ? 'todo' : found.task.status);
+
+    await saveTaskPatch(subjectKey, taskId, { points, status: newStatus });
+}
+
+async function updateStatus(subjectKey, taskId, newStatus) {
+    const found = findLocalTask(subjectKey, taskId);
+    if (!found) return;
+
+    newStatus = normalizeTaskStatus(newStatus);
+
+    if (newStatus === 'done' && found.task.points === 0 && found.task.maxPoints > 0) {
+        // Якщо завдання позначили як здане, просимо одразу ввести бал.
+        openPointsModal(found.task, async (val) => {
             if (val !== null) {
-                task.points = Math.min(val, task.maxPoints);
-                task.status = 'done';
+                const points = Math.min(Math.max(0, Number(val) || 0), found.task.maxPoints);
+                await saveTaskPatch(subjectKey, taskId, { status: 'done', points });
             } else {
-                task.status = oldStatus; 
+                renderAll();
             }
-            saveData();
-            renderAll();
         });
-    } else {
-        task.status = newStatus;
-        if (newStatus !== 'done') task.points = 0;
-        saveData();
-        renderAll();
+        return;
     }
+
+    // Якщо повертаємо завдання з "Здано" назад у роботу — бали очищаються.
+    const points = (newStatus !== 'done') ? 0 : found.task.points;
+    await saveTaskPatch(subjectKey, taskId, { status: newStatus, points });
 }
 
-function updateDeadline(subjectKey, taskId, newDate) {
-    const task = getAllSubjects()[subjectKey]?.tasks.find(t => t.id === taskId);
-    if (task && newDate) {
-        task.deadline = newDate;
-        saveData();
-        renderAll();
-    }
+async function updateDeadline(subjectKey, taskId, newDate) {
+    if (!newDate) return;
+    await saveTaskPatch(subjectKey, taskId, { deadline: newDate });
 }
 
 function navigateTo(pageName, event) {
@@ -763,79 +886,162 @@ function toggleSemester(el) {
 
 function openAddSubjectModal() {
     document.getElementById('add-subject-modal').classList.add('show');
-    document.getElementById('semester-select').value = '';
-    document.getElementById('template-select').innerHTML = '<option value="">-- Спочатку оберіть семестр --</option>';
-    document.getElementById('template-select').disabled = true;
+    document.getElementById('target-semester-select').value = ''; 
+    document.getElementById('filter-semester-select').value = 'all';
+    updateTemplateSelect(); 
 }
-function closeAddSubjectModal() { document.getElementById('add-subject-modal').classList.remove('show'); }
 
+function closeAddSubjectModal() { 
+    document.getElementById('add-subject-modal').classList.remove('show'); 
+}
+
+// ==========================================
+// ФІЛЬТРАЦІЯ ТА ВИБІР ПРЕДМЕТА
+// ==========================================
 function updateTemplateSelect() {
-    const sem = document.getElementById('semester-select').value;
+    const filterVal = document.getElementById('filter-semester-select').value; 
     const sel = document.getElementById('template-select');
-    if (!sem) { sel.innerHTML = '<option value="">-- Спочатку оберіть семестр --</option>'; sel.disabled = true; return; }
-    sel.disabled = false;
-    const templates = subjectTemplates[sem] || [];
-    sel.innerHTML = '<option value="">-- Оберіть предмет --</option>' + templates.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
-}
-
-function addSubjectFromTemplate() {
-    const sem = document.getElementById('semester-select').value;
-    const tpl = document.getElementById('template-select').value;
-    if (!sem || !tpl) { alert('Оберіть семестр і предмет'); return; }
-    const selected = subjectTemplates[sem]?.find(t => t.value === tpl);
-    if (!selected) return;
-    const cleanName = selected.label.replace(/^[^\s]+\s/, '');
-    const all = getAllSubjects();
-    for (let k in all) {
-        if (all[k].name === cleanName && all[k].semester === parseInt(sem)) {
-            alert(`⚠️ Предмет "${cleanName}" вже додано до Семестру ${sem}!`);
-            return;
+    
+    let templatesToShow = [];
+    
+    // Якщо обрано "0" (Загальний список) або "all"
+    if (filterVal === '0' || filterVal === 'all') {
+        for (let i = 1; i <= 8; i++) {
+            if (subjectTemplates[i]) templatesToShow = templatesToShow.concat(subjectTemplates[i]);
         }
-    }
-    const newKey = 'custom_' + tpl + '_' + Date.now();
-    let generatedTasks = [];
-    
-    if (tpl === 'mnc') {
-        generatedTasks = [
-            { id: newKey+'_1', title: 'Постановка задачі та вибір теми', deadline: '2026-03-20', maxPoints: 10, points: 0, status: 'todo' },
-            { id: newKey+'_2', title: 'Розділ 1: Аналіз предметної області', deadline: '2026-04-10', maxPoints: 20, points: 0, status: 'todo' },
-            { id: newKey+'_3', title: 'Розділ 2: Проектування моделі', deadline: '2026-05-01', maxPoints: 20, points: 0, status: 'todo' },
-            { id: newKey+'_4', title: 'Розділ 3: Програмна реалізація', deadline: '2026-05-20', maxPoints: 20, points: 0, status: 'todo' },
-            { id: newKey+'_5', title: 'Оформлення пояснювальної записки', deadline: '2026-06-01', maxPoints: 10, points: 0, status: 'todo' },
-            { id: newKey+'_6', title: 'Захист курсової роботи', deadline: '2026-06-15', maxPoints: 20, points: 0, status: 'todo' }
-        ];
     } else {
-        generatedTasks = [
-            { id: newKey+'_1', title: 'Практична робота 1', deadline: '2026-06-01', maxPoints: 20, points: 0, status: 'todo' },
-            { id: newKey+'_2', title: 'Практична робота 2', deadline: '2026-06-10', maxPoints: 30, points: 0, status: 'todo' },
-            { id: newKey+'_3', title: 'ІСПИТ', deadline: '2026-06-20', maxPoints: 50, points: 0, status: 'todo' }
-        ];
+        templatesToShow = subjectTemplates[filterVal] || [];
     }
-    
-    addedCustomSubjects[newKey] = {
-        key: newKey, name: cleanName, fullName: cleanName, type: 'exam', semester: parseInt(sem),
-        tasks: generatedTasks
-    };
-    
-    saveData();
-    alert(`✅ Предмет "${cleanName}" додано до Семестру ${sem}!`);
-    closeAddSubjectModal();
-    renderAll();
+
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">-- Оберіть дисципліну --</option>' + 
+        templatesToShow.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
 }
 
-window.addEventListener('load', () => {
-    const savedFilter = localStorage.getItem(KEY_FILTER);
-    if (savedFilter) {
-        document.getElementById('dashboard-semester-filter').value = savedFilter;
+// ==========================================
+// ДОДАВАННЯ ПРЕДМЕТА ТА ЗАВДАНЬ (З ОБРОБКОЮ ПОМИЛОК)
+// ==========================================
+async function addSubjectFromTemplate() {
+    if (!currentUser) return;
+
+    const sem = document.getElementById('target-semester-select').value;
+    const tpl = document.getElementById('template-select').value;
+
+    if (!sem || !tpl) { alert('Оберіть семестр для додавання і предмет!'); return; }
+
+    try {
+        document.querySelector('#add-subject-modal .btn-primary').textContent = "Завантаження...";
+
+        let selected = null;
+        for (let i = 1; i <= 8; i++) {
+            selected = (subjectTemplates[i] || []).find(t => t.value === tpl);
+            if (selected) break;
+        }
+        if (!selected) throw new Error("Предмет не знайдено в JS шаблонах");
+
+        const cleanName = selected.label.replace(/^[^\s]+\s/, '');
+
+        const { data: userData } = await supabaseClient.from('Users').select('users_id').eq('email', currentUser.email).single();
+        if (!userData) throw new Error("Профіль не знайдено в БД");
+
+        const { data: existingSubj } = await supabaseClient.from('User_Subjects')
+            .select('*').eq('user_id', userData.users_id).eq('semester', parseInt(sem)).eq('subjects_templates_id', tpl);
+        if (existingSubj && existingSubj.length > 0) {
+            alert(`⚠️ Предмет "${cleanName}" вже є у Семестрі ${sem}!`); return;
+        }
+
+        const { data: newSubj, error: subjErr } = await supabaseClient
+            .from('User_Subjects')
+            .insert([{ user_id: userData.users_id, subjects_templates_id: tpl, semester: parseInt(sem) }])
+            .select().single();
+        if (subjErr) throw subjErr;
+
+        const { data: taskTemplates } = await supabaseClient.from('Task_Templates').select('*').eq('subjects_templates_id', tpl);
+        if (taskTemplates && taskTemplates.length > 0) {
+            const tasks = taskTemplates.map(t => ({
+                user_subjects_id: newSubj.user_subjects_id,
+                title: t.title,
+                max_points: t.max_points,
+                sort_order: t.sort_order,
+                is_exam: t.is_exam,
+                status: 'todo'
+            }));
+            await supabaseClient.from('User_Tasks').insert(tasks);
+        }
+
+        alert(`✅ Предмет успішно додано!`);
+        closeAddSubjectModal();
+        loadDataFromSupabase();
+    } catch (err) {
+        console.error(err);
+        alert("Помилка: " + err.message);
+    } finally {
+        document.querySelector('#add-subject-modal .btn-primary').textContent = "Додати до трекера";
     }
+}
 
-    const hash = window.location.hash.replace('#','');
-    if (hash && document.getElementById('page-'+hash)) navigateTo(hash);
-    else renderAll();
-});
-
+// ==========================================
+// НАВІГАЦІЯ (ХЕШ)
+// ==========================================
 window.addEventListener('hashchange', () => {
     const hash = window.location.hash.replace('#','');
     if (hash && document.getElementById('page-'+hash)) navigateTo(hash);
 });
 
+// ==========================================
+// ЗЧИТУВАННЯ ДАНИХ З ХМАРИ
+// ==========================================
+async function loadDataFromSupabase() {
+    if (!currentUser) return;
+    const { data: userData } = await supabaseClient.from('Users').select('users_id').eq('email', currentUser.email).single();
+    if (!userData) return;
+
+    const { data: userSubjects, error } = await supabaseClient
+        .from('User_Subjects')
+        .select(`
+            user_subjects_id, subjects_templates_id, semester, 
+            Subjects_Templates ( full_name, type ),
+            User_Tasks ( user_tasks_id, title, deadline, points, max_points, status, sort_order, is_exam )
+        `)
+        .eq('user_id', userData.users_id);
+
+    if (error) { console.error("Помилка завантаження:", error); return; }
+
+    subjectsData = {}; 
+
+    userSubjects.forEach(us => {
+        const tplId = us.subjects_templates_id;
+        
+        let mappedTasks = (us.User_Tasks || []).sort((a,b) => a.sort_order - b.sort_order).map(t => ({
+            id: t.user_tasks_id,
+            title: t.title,
+            deadline: t.deadline ? t.deadline.split('T')[0] : new Date().toISOString().split('T')[0],
+            points: parseFloat(t.points) || 0,
+            status: normalizeTaskStatus(t.status),
+            maxPoints: parseFloat(t.max_points) || 10
+        }));
+
+        let label = us.Subjects_Templates.full_name;
+        for (let i = 1; i <= 8; i++) {
+            const found = (subjectTemplates[i] || []).find(s => s.value === tplId);
+            if (found) { label = found.label.replace(/^[^\s]+\s/, ''); break; }
+        }
+
+        subjectsData[tplId] = {
+            key: tplId,
+            name: label,
+            fullName: us.Subjects_Templates.full_name,
+            type: us.Subjects_Templates.type,
+            semester: us.semester, // Цільовий семестр!
+            tasks: mappedTasks,
+            dbId: us.user_subjects_id
+        };
+    });
+
+    renderAll(); 
+}
+
+// Тимчасова функція-заглушка
+function saveData() {
+    console.log("Локальне збереження виконано.");
+}
