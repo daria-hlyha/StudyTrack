@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>StudyTrack</title>
-    <link rel="icon" type="image/jpeg" href="Images/logo3.jpg">
-    <link rel="shortcut icon" type="image/jpeg" href="Images/logo3.jpg">
+    <link rel="icon" type="image/jpeg" href="Images/logo.jpg">
+    <link rel="shortcut icon" type="image/jpeg" href="Images/logo.jpg">
     <link rel="stylesheet" href="CSS/style.css">
 </head>
 <body>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" onclick="toggleMobileSidebar()" aria-label="Відкрити меню" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" onclick="closeMobileSidebar()"></div>
 <div class="modal-overlay show" id="login-modal" style="z-index: 9999; background: var(--bg);">
         <div class="modal" style="text-align: center;">
             <div class="logo" style="margin-bottom: 20px;">🎓 StudyTrack</div>
@@ -26,9 +32,10 @@
             <p id="auth-error" style="color: var(--danger); margin-top: 12px; font-size: 0.85rem; font-weight: 600; text-align: center;"></p>
         </div>
     </div>
-    <nav>
+    <nav id="sidebar-nav">
+        <button class="mobile-nav-close" type="button" onclick="closeMobileSidebar()" aria-label="Закрити меню">×</button>
         <div class="sidebar-brand">
-            <img src="Images/logo3.jpg" alt="StudyTrack logo" class="sidebar-logo">
+            <img src="Images/logo.jpg" style="border-radius: 50%;" alt="StudyTrack logo" class="sidebar-logo">
             <span>StudyTrack</span>
         </div>
         <a href="#dashboard" class="active" data-page="dashboard" onclick="navigateTo('dashboard', event)">
@@ -43,47 +50,62 @@
         <a href="#achievements" data-page="achievements" onclick="navigateTo('achievements', event)">
             <span style="flex:1;">🏆 Досягнення</span>
         </a>
+    <!-- Фільтр семестру в навігації -->
+    <div style="padding: 8px 12px; margin-top: 8px;">
+        <select id="nav-semester-filter" onchange="applyNavFilter()" 
+                style="width:100%; padding:8px; border-radius:8px; background:#1e293b; color:white; border:1px solid #334155; font-size:0.85rem;">
+            <option value="all">📚 Усі семестри</option>
+            <option value="1">📘 Семестр 1</option>
+            <option value="2">📗 Семестр 2</option>
+            <option value="3">📙 Семестр 3</option>
+            <option value="4">📕 Семестр 4</option>
+            <option value="5">📒 Семестр 5</option>
+            <option value="6">📔 Семестр 6</option>
+            <option value="7">📓 Семестр 7</option>
+            <option value="8">📘 Семестр 8</option>
+        </select>
+    </div>
+      <div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="1">
+                <span class="arrow">▶</span> Предмети (Семестр 1)
+            </div>
+            <div class="semester-group open" id="sem-group-1"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="1">
-            <span class="arrow">▶</span> Предмети (Семестр 1)
-        </div>
-        <div class="semester-group open" id="sem-group-1"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="2">
+                <span class="arrow">▶</span> Предмети (Семестр 2)
+            </div>
+            <div class="semester-group open" id="sem-group-2"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="2">
-            <span class="arrow">▶</span> Предмети (Семестр 2)
-        </div>
-        <div class="semester-group open" id="sem-group-2"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="3">
+                <span class="arrow">▶</span> Предмети (Семестр 3)
+            </div>
+            <div class="semester-group open" id="sem-group-3"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="3">
-            <span class="arrow">▶</span> Предмети (Семестр 3)
-        </div>
-        <div class="semester-group open" id="sem-group-3"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="4">
+                <span class="arrow">▶</span> Предмети (Семестр 4)
+            </div>
+            <div class="semester-group open" id="sem-group-4"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="4">
-            <span class="arrow">▶</span> Предмети (Семестр 4)
-        </div>
-        <div class="semester-group open" id="sem-group-4"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="5">
+                <span class="arrow">▶</span> Предмети (Семестр 5)
+            </div>
+            <div class="semester-group open" id="sem-group-5"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="5">
-            <span class="arrow">▶</span> Предмети (Семестр 5)
-        </div>
-        <div class="semester-group open" id="sem-group-5"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="6">
+                <span class="arrow">▶</span> Предмети (Семестр 6)
+            </div>
+            <div class="semester-group open" id="sem-group-6"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="6">
-            <span class="arrow">▶</span> Предмети (Семестр 6)
-        </div>
-        <div class="semester-group open" id="sem-group-6"></div>
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="7">
+                <span class="arrow">▶</span> Предмети (Семестр 7)
+            </div>
+            <div class="semester-group open" id="sem-group-7"></div>
 
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="7">
-            <span class="arrow">▶</span> Предмети (Семестр 7)
-        </div>
-        <div class="semester-group open" id="sem-group-7"></div>
-
-        <div class="nav-section open" onclick="toggleSemester(this)" data-semester="8">
-            <span class="arrow">▶</span> Предмети (Семестр 8)
-        </div>
-        <div class="semester-group open" id="sem-group-8"></div>
-
+            <div class="nav-section open" onclick="toggleSemester(this)" data-semester="8">
+                <span class="arrow">▶</span> Предмети (Семестр 8)
+            </div>
+            <div class="semester-group open" id="sem-group-8"></div>
+    </div>
 
 
         <div style="margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 8px;">
@@ -159,7 +181,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; border-left: 2px solid var(--border); padding-left: 20px;">
                     <span style="font-weight:600; font-size:0.85rem;">Статус:</span>
-                    <button class="btn btn-xs btn-outline kanban-filter-btn kanban-filter-active btn-primary" data-kanban-filter="all">Всі</button>
+                    <button class="btn btn-xs btn-outline kanban-filter-btn kanban-filter-active filter-btn-active" data-kanban-filter="all">Всі</button>
                     <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="todo">📝 To Do</button>
                     <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="progress">⚡ In Progress</button>
                     <button class="btn btn-xs btn-outline kanban-filter-btn" data-kanban-filter="done">✅ Done</button>
@@ -174,7 +196,7 @@
 
         <section id="page-achievements" class="page">
             <h1>🏆 Система досягнень</h1>
-            <p class="subtitle">Гейміфікація академічної успішності (Недоступно)</p>
+            <p class="subtitle">Гейміфікація академічної успішності</p>
             <div class="grid-2" id="achievements-list"></div>
         </section>
 
@@ -275,6 +297,7 @@
             </div>
         </div>
     </div>
+    <script src="JavaScript/logic.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="JavaScript/script.js"></script>
 </body>

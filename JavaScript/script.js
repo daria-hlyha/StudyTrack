@@ -142,50 +142,23 @@ let draggedRow = null;
 function getAllSubjects() { return { ...subjectsData, ...addedCustomSubjects }; }
 function getSubjectIcon(key) { const icons = { mn:'🤖', pis:'📐', tpr:'🧠', vd:'📈', devo:'☁️', uzhcp:'🔄', fv:'🏃', custom_mnc:'🤖' }; return icons[key] || '📝'; }
 
-function getProgressClass(percent) { if (percent < 40) return 'danger'; if (percent < 70) return 'warning'; return ''; }
+function getProgressClass(percent) {
+    return window.StudyTrackLogic.getProgressClass(percent);
+}
 function getStatusBadge(status) { if (status === 'done') return '<span class="badge badge-success">✅ Здано</span>'; if (status === 'progress') return '<span class="badge badge-warning">⚡ В процесі</span>'; return '<span class="badge badge-neutral">📝 До виконання</span>'; }
 
-function getDeadlineColor(task) { 
-    if (task.status === 'done') return 'success'; 
-    const d = new Date(task.deadline);
-    d.setHours(0, 0, 0, 0);
-    
-    // 💡 ВИПРАВЛЕНО: тепер беремо поточну дату системи
-    const todayDate = new Date(); 
-    todayDate.setHours(0, 0, 0, 0);
-    
-    const diff = (d - todayDate) / (1000 * 60 * 60 * 24); 
-    if (diff < 0) return 'danger'; 
-    if (diff <= 2) return 'warning'; 
-    return 'info'; 
+function getDeadlineColor(task) {
+    return window.StudyTrackLogic.getDeadlineColor(task);
 }
 
 function getDeadlineBadge(task) { const color = getDeadlineColor(task); if (color === 'danger') return '<span class="badge badge-danger">🔴 Прострочено</span>'; if (color === 'warning') return '<span class="badge badge-warning">🟡 Терміново</span>'; if (color === 'success') return '<span class="badge badge-success">🟢 Здано</span>'; return '<span class="badge badge-info">🔵 Заплановано</span>'; }
 
 function calcPassProgress(tasks) {
-    const earned = tasks.reduce((s, t) => s + (t.points || 0), 0);
-    const total = tasks.reduce((s, t) => s + (t.maxPoints || 0), 0);
-    const percent = total > 0 ? Math.round((earned / total) * 100) : 0;
-    const doneCount = tasks.filter(t => t.status === 'done').length;
-    const progressCount = tasks.filter(t => t.status === 'progress').length;
-    const todoCount = tasks.filter(t => t.status === 'todo').length;
-    return { earned, total, percent, doneCount, progressCount, todoCount, isExam: false };
+    return window.StudyTrackLogic.calcPassProgress(tasks);
 }
 
 function calcExamProgress(tasks) {
-    const examTasks = tasks.filter(t => t.title.toUpperCase().includes('ІСПИТ') || t.title.toUpperCase().includes('ЕКЗАМЕН'));
-    const semTasks = tasks.filter(t => !t.title.toUpperCase().includes('ІСПИТ') && !t.title.toUpperCase().includes('ЕКЗАМЕН'));
-    const semEarned = semTasks.reduce((s, t) => s + (t.points || 0), 0);
-    const semTotal = semTasks.reduce((s, t) => s + (t.maxPoints || 0), 0);
-    const semPercent = semTotal > 0 ? (semEarned / semTotal) * 100 : 0;
-    const examEarned = examTasks.reduce((s, t) => s + (t.points || 0), 0);
-    const examTotal = examTasks.reduce((s, t) => s + (t.maxPoints || 0), 0);
-    const examPercent = examTotal > 0 ? (examEarned / examTotal) * 100 : 0;
-    const finalPercent = (semPercent * 0.6) + (examPercent * 0.4);
-    const doneCount = tasks.filter(t => t.status === 'done').length;
-    const progressCount = tasks.filter(t => t.status === 'progress').length;
-    const todoCount = tasks.filter(t => t.status === 'todo').length;
-    return { earned: Math.round(finalPercent * 10) / 10, total: 100, percent: Math.round(finalPercent), doneCount, progressCount, todoCount, isExam: true, semPoints: semEarned, semMax: semTotal, examPoints: examEarned, examMax: examTotal };
+    return window.StudyTrackLogic.calcExamProgress(tasks);
 }
 
 function calcSubjectProgress(subjectKey) {
@@ -293,8 +266,11 @@ function addNewTaskInEdit() {
 
 function removeTaskInEdit(taskId) {
     if(confirm('Видалити це завдання зі списку?')) {
+        // Видаляємо з DOM
         const row = document.querySelector(`.edit-task-row[data-id="${taskId}"]`);
         if (row) row.remove();
+        // Видаляємо з tempEditTasks, щоб потім правильно визначити, що треба видалити
+        tempEditTasks = tempEditTasks.filter(t => String(t.id) !== String(taskId));
     }
 }
 
@@ -304,51 +280,83 @@ async function saveEditedTasks() {
     if (!subj || !subj.dbId) return;
 
     const rows = document.querySelectorAll('#edit-tasks-list .edit-task-row');
-    const newTasks = [];
+    const originalTasks = subj.tasks; // оригінальні завдання (з бази)
+    const newTaskIds = new Set();
 
+    const updates = []; // задачі, які будемо оновлювати
+    const inserts = []; // нові задачі для вставки
+    const deleteIds = []; // ID задач, які більше немає в редакторі
+
+    // Збираємо ID з рядків редактора
     rows.forEach(row => {
         const id = row.dataset.id;
+        newTaskIds.add(id);
         const title = row.querySelector('.edit-title').value.trim() || 'Без назви';
         const deadline = row.querySelector('.edit-deadline').value || new Date().toISOString().split('T')[0];
         const maxPoints = parseFloat(row.querySelector('.edit-max-points').value) || 10;
-        const existingTask = subj.tasks.find(t => t.id === id) || tempEditTasks.find(t => t.id === id);
 
-        newTasks.push({
-            user_tasks_id: existingTask ? existingTask.id : undefined, // для існуючих
-            title: title,
-            deadline: deadline,
-            max_points: maxPoints,
-            points: existingTask ? (existingTask.points || 0) : 0,
-            status: existingTask ? (existingTask.status || 'todo') : 'todo',
-            sort_order: newTasks.length + 1,
-            // user_subjects_id додамо пізніше
-        });
+        const original = originalTasks.find(t => String(t.id) === id);
+        if (original) {
+            // Оновлюємо тільки редаговані поля; бали та статус залишаються незмінними
+            updates.push({
+                user_tasks_id: original.id,
+                title,
+                deadline,
+                max_points: maxPoints,
+                // Не чіпаємо points і status – вони залишаться такими ж
+            });
+        } else {
+            // Нова задача (раніше не було)
+            inserts.push({
+                user_subjects_id: subj.dbId,
+                title,
+                deadline,
+                max_points: maxPoints,
+                points: 0,
+                status: 'todo',
+                sort_order: rows.length + 1
+            });
+        }
+    });
+
+    // Визначаємо, які оригінальні задачі були видалені (їхні ID відсутні в newTaskIds)
+    originalTasks.forEach(t => {
+        if (!newTaskIds.has(String(t.id))) {
+            deleteIds.push(t.id);
+        }
     });
 
     try {
-        // Видаляємо всі старі завдання цього предмета
-        await supabaseClient
-            .from('User_Tasks')
-            .delete()
-            .eq('user_subjects_id', subj.dbId);
+        // 1. Видаляємо задачі, яких більше немає
+        if (deleteIds.length > 0) {
+            await supabaseClient
+                .from('User_Tasks')
+                .delete()
+                .in('user_tasks_id', deleteIds);
+        }
 
-        // Вставляємо новий список
-        const tasksToInsert = newTasks.map(t => ({
-            user_subjects_id: subj.dbId,
-            title: t.title,
-            deadline: t.deadline,
-            max_points: t.max_points,
-            points: t.points,
-            status: t.status,
-            sort_order: t.sort_order
-        }));
+        // 2. Оновлюємо існуючі задачі
+        for (const upd of updates) {
+            await supabaseClient
+                .from('User_Tasks')
+                .update({
+                    title: upd.title,
+                    deadline: upd.deadline,
+                    max_points: upd.max_points
+                    // points та status не передаємо => залишаються незмінними
+                })
+                .eq('user_tasks_id', upd.user_tasks_id);
+        }
 
-        await supabaseClient.from('User_Tasks').insert(tasksToInsert);
+        // 3. Вставляємо нові задачі
+        if (inserts.length > 0) {
+            await supabaseClient.from('User_Tasks').insert(inserts);
+        }
 
         closeEditTasksModal();
-        loadDataFromSupabase();
+        await loadDataFromSupabase(); // оновлюємо все з бази
     } catch (err) {
-        console.error('Помилка збереження редагованих завдань:', err);
+        console.error('Помилка збереження:', err);
         alert('Не вдалося зберегти зміни.');
     }
 }
@@ -480,6 +488,7 @@ function renderNav() {
 
 function renderAll() {
     renderNav();
+    initNavFilter()
     renderDashboard();
     renderDeadlines();
     renderKanbanMenu();
@@ -734,7 +743,7 @@ function renderSubjectPage(key) {
 }
 
 function normalizeTaskStatus(status) {
-    return ['todo', 'progress', 'done'].includes(status) ? status : 'todo';
+    return window.StudyTrackLogic.normalizeTaskStatus(status);
 }
 
 function findLocalTask(subjectKey, taskId) {
@@ -842,6 +851,7 @@ function navigateTo(pageName, event) {
     const navLink = document.querySelector(`nav a[data-page="${pageName}"]`);
     if (navLink) navLink.classList.add('active');
     window.location.hash = pageName;
+    closeMobileSidebar();
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -864,14 +874,14 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 document.querySelectorAll('.kanban-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         if (btn.dataset.kanbanFilter === 'all') {
-            document.querySelectorAll('.kanban-filter-btn').forEach(b => b.classList.remove('kanban-filter-active','btn-primary'));
-            btn.classList.add('kanban-filter-active','btn-primary');
+            document.querySelectorAll('.kanban-filter-btn').forEach(b => b.classList.remove('kanban-filter-active','filter-btn-active','btn-primary'));
+            btn.classList.add('kanban-filter-active','filter-btn-active');
         } else {
-            document.querySelector('.kanban-filter-btn[data-kanban-filter="all"]').classList.remove('kanban-filter-active','btn-primary');
+            document.querySelector('.kanban-filter-btn[data-kanban-filter="all"]').classList.remove('kanban-filter-active','filter-btn-active','btn-primary');
             btn.classList.toggle('kanban-filter-active');
-            btn.classList.toggle('btn-primary');
+            btn.classList.toggle('filter-btn-active');
             if (!document.querySelector('.kanban-filter-btn.kanban-filter-active')) {
-                document.querySelector('.kanban-filter-btn[data-kanban-filter="all"]').classList.add('kanban-filter-active','btn-primary');
+                document.querySelector('.kanban-filter-btn[data-kanban-filter="all"]').classList.add('kanban-filter-active','filter-btn-active');
             }
         }
         updateKanbanFilterButtons();
@@ -883,6 +893,47 @@ function toggleSemester(el) {
     el.classList.toggle('open');
     group.classList.toggle('open');
 }
+// ---- Фільтр навігації ----
+function applyNavFilter() {
+    const filter = document.getElementById('nav-semester-filter').value;
+    localStorage.setItem('nav_semester_filter', filter); // зберігаємо вибір
+
+    for (let i = 1; i <= 8; i++) {
+        const section = document.querySelector(`.nav-section[data-semester="${i}"]`);
+        const group = document.getElementById(`sem-group-${i}`);
+        if (!section || !group) continue;
+
+        if (filter === 'all') {
+            // показуємо всі, зберігаємо поточний стан згортання
+            section.style.display = '';
+            group.style.display = '';
+        } else {
+            const sem = parseInt(filter);
+            if (i === sem) {
+                // потрібний семестр – показуємо та автоматично розгортаємо
+                section.style.display = '';
+                group.style.display = '';
+                section.classList.add('open');
+                group.classList.add('open');
+            } else {
+                // ховаємо
+                section.style.display = 'none';
+                group.style.display = 'none';
+            }
+        }
+    }
+}
+
+// Ініціалізація при завантаженні сторінки
+function initNavFilter() {
+    const saved = localStorage.getItem('nav_semester_filter') || 'all';
+    const filterEl = document.getElementById('nav-semester-filter');
+    if (filterEl) {
+        filterEl.value = saved;
+        applyNavFilter(); // застосовуємо фільтр
+    }
+}
+
 
 function openAddSubjectModal() {
     document.getElementById('add-subject-modal').classList.add('show');
@@ -979,6 +1030,47 @@ async function addSubjectFromTemplate() {
         document.querySelector('#add-subject-modal .btn-primary').textContent = "Додати до трекера";
     }
 }
+
+
+// ======================== МОБІЛЬНИЙ САЙДБАР ========================
+function openMobileSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const toggle = document.getElementById('mobile-menu-toggle');
+    if (!nav || !backdrop) return;
+
+    nav.classList.add('nav-open');
+    backdrop.classList.add('show');
+    document.body.classList.add('mobile-nav-lock');
+    if (toggle) toggle.setAttribute('aria-expanded', 'true');
+}
+
+function closeMobileSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const toggle = document.getElementById('mobile-menu-toggle');
+    if (!nav || !backdrop) return;
+
+    nav.classList.remove('nav-open');
+    backdrop.classList.remove('show');
+    document.body.classList.remove('mobile-nav-lock');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
+
+function toggleMobileSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    if (!nav) return;
+    if (nav.classList.contains('nav-open')) closeMobileSidebar();
+    else openMobileSidebar();
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMobileSidebar();
+});
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) closeMobileSidebar();
+});
 
 // ==========================================
 // НАВІГАЦІЯ (ХЕШ)

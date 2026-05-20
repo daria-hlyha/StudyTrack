@@ -22,6 +22,61 @@ body {
     min-height: 100vh;
 }
 
+.mobile-menu-toggle,
+.mobile-nav-close,
+.mobile-nav-backdrop {
+    display: none;
+}
+
+.mobile-menu-toggle {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 14px;
+    background: var(--primary);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mobile-menu-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: white;
+}
+
+.mobile-nav-close {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 1.55rem;
+    line-height: 1;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-nav-backdrop.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.52);
+    z-index: 70;
+    backdrop-filter: blur(2px);
+}
+
+body.mobile-nav-lock {
+    overflow: hidden;
+}
+
 /* Навігація */
 nav {
     width: 280px; background: var(--nav-bg); color: white; min-height: 100vh;
@@ -130,7 +185,8 @@ tr:hover td { background: #f8fafc; }
 .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
 .btn-xs { padding: 4px 10px; font-size: 0.75rem; border-radius: 20px; }
-.filter-btn-active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
+.filter-btn-active,
+.kanban-filter-active { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
 
 .kanban-menu { display: flex; gap: 8px; align-items: center; background: #fff; padding: 6px 12px; border-radius: 12px; border: 1px solid var(--border); flex-wrap: wrap; }
 .kanban-menu-item { position: relative; cursor: pointer; padding: 8px 16px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; transition: background 0.2s, color 0.2s; color: var(--text); }
@@ -233,4 +289,332 @@ footer { margin-top: 60px; color: #94a3b8; font-size: 0.8rem; text-align: center
     color: var(--muted);
     user-select: none;
     padding: 0 8px;
+}
+
+
+/* ======================== АДАПТИВНІСТЬ ДЛЯ РІЗНИХ ЕКРАНІВ ======================== */
+/* Laptop L — до 1440px */
+@media (max-width: 1440px) {
+    main {
+        max-width: none;
+        padding: 30px 34px;
+    }
+}
+
+/* Laptop — до 1024px */
+@media (max-width: 1024px) {
+    nav {
+        width: 240px;
+        padding: 20px 10px;
+    }
+
+    main {
+        margin-left: 240px;
+        padding: 24px;
+    }
+
+    .sidebar-brand span {
+        font-size: 1.25rem;
+    }
+
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .kanban-board {
+        gap: 14px;
+    }
+
+    .kanban-column {
+        flex-basis: 250px;
+    }
+}
+
+/* Tablet — до 768px */
+@media (max-width: 768px) {
+    body {
+        display: block;
+        min-width: 0;
+    }
+
+    .mobile-menu-toggle {
+        display: flex;
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 80;
+    }
+
+    .mobile-nav-close {
+        display: flex;
+        position: absolute;
+        top: 14px;
+        right: 14px;
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(86vw, 310px);
+        min-height: 100vh;
+        max-height: 100vh;
+        padding: 64px 12px 18px;
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 8px 0 30px rgba(15, 23, 42, 0.28);
+        z-index: 90;
+    }
+
+    nav.nav-open {
+        transform: translateX(0);
+    }
+
+    main {
+        margin-left: 0;
+        width: 100%;
+        padding: 76px 14px 18px;
+    }
+
+    h1 {
+        font-size: 1.55rem;
+    }
+
+    .subtitle {
+        margin-bottom: 18px;
+    }
+
+    .card {
+        padding: 18px;
+        border-radius: 14px;
+        overflow-x: auto;
+    }
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        min-width: 650px;
+    }
+
+    .kanban-menu {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .kanban-menu-item {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .kanban-dropdown {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        top: auto;
+        min-width: 0;
+        max-height: 45vh;
+    }
+
+    .kanban-board {
+        flex-direction: column;
+        overflow-x: visible;
+        gap: 16px;
+    }
+
+    .kanban-column {
+        flex: none;
+        width: 100%;
+        min-height: 180px;
+        max-height: 55vh;
+    }
+
+    .modal {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px);
+        padding: 22px;
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+
+    .edit-task-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .edit-task-row .drag-handle {
+        width: 32px;
+        padding: 0;
+        text-align: center;
+    }
+
+    .edit-task-row .edit-title {
+        flex: 1 1 calc(100% - 45px) !important;
+        min-width: 200px;
+    }
+
+    .edit-task-row .edit-deadline,
+    .edit-task-row .edit-max-points {
+        flex: 1 1 130px !important;
+        width: auto !important;
+    }
+
+    .btn {
+        justify-content: center;
+    }
+}
+
+/* Mobile L — до 425px */
+@media (max-width: 425px) {
+    main {
+        padding: 14px 10px;
+    }
+
+    .sidebar-brand {
+        padding: 8px 10px 16px;
+    }
+
+    .sidebar-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .sidebar-brand span {
+        font-size: 1.15rem;
+    }
+
+    nav a {
+        font-size: 0.84rem;
+        padding: 8px 10px 8px 20px;
+    }
+
+    h1 {
+        font-size: 1.35rem;
+    }
+
+    .card {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .btn-sm,
+    .btn-xs {
+        width: auto;
+    }
+
+    select,
+    input {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+
+    .kanban-card {
+        font-size: 0.84rem;
+        padding: 12px;
+    }
+
+    .modal {
+        padding: 18px;
+    }
+
+    .modal > div[style*="display: flex"],
+    .card > div[style*="display:flex"],
+    .card > div[style*="display: flex"] {
+        gap: 10px;
+    }
+
+    footer {
+        margin-top: 36px;
+    }
+}
+
+/* Mobile M — до 375px */
+@media (max-width: 375px) {
+    main {
+        padding: 12px 8px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        font-size: 0.74rem;
+    }
+
+    .kanban-column {
+        padding: 12px;
+    }
+
+    .edit-task-row .edit-title,
+    .edit-task-row .edit-deadline,
+    .edit-task-row .edit-max-points {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 0;
+    }
+}
+
+/* Mobile S — до 320px */
+@media (max-width: 320px) {
+    nav {
+        padding: 64px 8px 14px;
+    }
+
+    .mobile-menu-toggle {
+        width: 42px;
+        height: 42px;
+        top: 10px;
+        left: 10px;
+    }
+
+    .sidebar-brand {
+        gap: 8px;
+    }
+
+    .sidebar-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .sidebar-brand span {
+        font-size: 1.05rem;
+    }
+
+    h1 {
+        font-size: 1.22rem;
+    }
+
+    .subtitle,
+    .card,
+    .kanban-card,
+    nav a {
+        font-size: 0.8rem;
+    }
+
+    .modal {
+        width: calc(100vw - 12px) !important;
+        max-width: calc(100vw - 12px);
+        padding: 14px;
+    }
+
+    table {
+        min-width: 600px;
+    }
 }
